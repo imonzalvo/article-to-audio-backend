@@ -1,0 +1,252 @@
+// File: package.json
+{
+  "name": "nestjs-article-user-boilerplate",
+  "version": "0.0.1",
+  "description": "A NestJS boilerplate with Article and User entities",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main"
+  },
+  "dependencies": {
+    "@nestjs/common": "^9.0.0",
+    "@nestjs/core": "^9.0.0",
+    "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/typeorm": "^9.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.2.0",
+    "typeorm": "^0.3.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^9.0.0",
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.11.18",
+    "typescript": "^4.7.4"
+  }
+}
+
+// File: src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe());
+  await app.listen(3000);
+}
+bootstrap();
+
+// File: src/app.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
+import { ArticleModule } from './article/article.module';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: ':memory:',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+    UserModule,
+    ArticleModule,
+  ],
+})
+export class AppModule {}
+
+// File: src/user/user.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Article } from '../article/article.entity';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  username: string;
+
+  @Column()
+  email: string;
+
+  @OneToMany(() => Article, article => article.author)
+  articles: Article[];
+}
+
+// File: src/user/user.controller.ts
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(+id);
+  }
+}
+
+// File: src/user/user.service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  create(createUserDto: CreateUserDto) {
+    const user = this.userRepository.create(createUserDto);
+    return this.userRepository.save(user);
+  }
+
+  findOne(id: number) {
+    return this.userRepository.findOne({ where: { id } });
+  }
+}
+
+// File: src/user/dto/create-user.dto.ts
+import { IsString, IsEmail } from 'class-validator';
+
+export class CreateUserDto {
+  @IsString()
+  username: string;
+
+  @IsEmail()
+  email: string;
+}
+
+// File: src/user/user.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserService } from './user.service';
+import { UserController } from './user.controller';
+import { User } from './user.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([User])],
+  providers: [UserService],
+  controllers: [UserController],
+  exports: [UserService],
+})
+export class UserModule {}
+
+// File: src/article/article.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from '../user/user.entity';
+
+@Entity()
+export class Article {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column('text')
+  content: string;
+
+  @ManyToOne(() => User, user => user.articles)
+  author: User;
+}
+
+// File: src/article/article.controller.ts
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { ArticleService } from './article.service';
+import { CreateArticleDto } from './dto/create-article.dto';
+
+@Controller('articles')
+export class ArticleController {
+  constructor(private readonly articleService: ArticleService) {}
+
+  @Post()
+  create(@Body() createArticleDto: CreateArticleDto) {
+    return this.articleService.create(createArticleDto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.articleService.findOne(+id);
+  }
+}
+
+// File: src/article/article.service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Article } from './article.entity';
+import { CreateArticleDto } from './dto/create-article.dto';
+import { UserService } from '../user/user.service';
+
+@Injectable()
+export class ArticleService {
+  constructor(
+    @InjectRepository(Article)
+    private articleRepository: Repository<Article>,
+    private userService: UserService,
+  ) {}
+
+  async create(createArticleDto: CreateArticleDto) {
+    const author = await this.userService.findOne(createArticleDto.authorId);
+    const article = this.articleRepository.create({
+      ...createArticleDto,
+      author,
+    });
+    return this.articleRepository.save(article);
+  }
+
+  findOne(id: number) {
+    return this.articleRepository.findOne({ where: { id }, relations: ['author'] });
+  }
+}
+
+// File: src/article/dto/create-article.dto.ts
+import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+
+export class CreateArticleDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+
+  @IsNumber()
+  authorId: number;
+}
+
+// File: src/article/article.module.ts
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ArticleService } from './article.service';
+import { ArticleController } from './article.controller';
+import { Article } from './article.entity';
+import { UserModule } from '../user/user.module';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Article]), UserModule],
+  providers: [ArticleService],
+  controllers: [ArticleController],
+})
+export class ArticleModule {}
+
