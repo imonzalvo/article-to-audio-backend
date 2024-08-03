@@ -4,7 +4,7 @@ import { PollyService } from "./polly.service";
 @Module({
   imports: [ConfigModule.forRoot()],
   providers: [PollyService, ConfigService],
-  exports: [PollyService], // Exporting the service to make it available in other modules
+  exports: [PollyService],
 })
 
 export class PollyModule {}

@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { OpenAI } from 'openai';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { OpenAI } from "openai";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class GptService {
@@ -8,9 +8,11 @@ export class GptService {
   private openai: OpenAI;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>("OPENAI_API_KEY");
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY environment variable is missing or empty');
+      throw new Error(
+        "OPENAI_API_KEY environment variable is missing or empty"
+      );
     }
 
     this.openai = new OpenAI({
@@ -18,21 +20,34 @@ export class GptService {
     });
   }
 
+  /* 
+    - 1 token -> 3/4 words
+    - 1 article ~2200 words
+    - Summary? 1800
+  */
+
   async summarizeText(text: string): Promise<string> {
     try {
       const response = await this.openai.chat.completions.create({
-        model: 
-        // 'gpt-4', 
-        // 
-        'gpt-3.5-turbo',
+        model:
+          // 'gpt-4',
+          //
+          "gpt-4o-mini",
         messages: [
-          { role: 'system', content: 'You are an assistant that summarizes articles in spanish.' },
-          { role: 'user', content: `Please summarize the following text: ${text} in spanish.` },
+          {
+            role: "system",
+            content: `You are an assistant that explains articles to users. Your work will be then read by a locutor on a podacast that users will listen while commuting. 
+          You have the ability to explain articles without losing any important information.`,
+          },
+          {
+            role: "user",
+            content: `Please summarize the following text: ${text}.`,
+          },
         ],
-        max_tokens: 150, // Adjust the length as needed
+        max_tokens: 3000, // Adjust the length as needed
       });
 
-      const summary = response.choices[0]?.message?.content.trim() || '';
+      const summary = response.choices[0]?.message?.content.trim() || "";
       return summary;
     } catch (error) {
       this.logger.error(`Failed to summarize text: ${error.message}`);

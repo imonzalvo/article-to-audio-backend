@@ -18,9 +18,9 @@ let GptService = GptService_1 = class GptService {
     constructor(configService) {
         this.configService = configService;
         this.logger = new common_1.Logger(GptService_1.name);
-        const apiKey = this.configService.get('OPENAI_API_KEY');
+        const apiKey = this.configService.get("OPENAI_API_KEY");
         if (!apiKey) {
-            throw new Error('OPENAI_API_KEY environment variable is missing or empty');
+            throw new Error("OPENAI_API_KEY environment variable is missing or empty");
         }
         this.openai = new openai_1.OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
@@ -30,14 +30,21 @@ let GptService = GptService_1 = class GptService {
         var _a, _b;
         try {
             const response = await this.openai.chat.completions.create({
-                model: 'gpt-3.5-turbo',
+                model: "gpt-4o-mini",
                 messages: [
-                    { role: 'system', content: 'You are an assistant that summarizes articles in spanish.' },
-                    { role: 'user', content: `Please summarize the following text: ${text} in spanish.` },
+                    {
+                        role: "system",
+                        content: `You are an assistant that explains articles to users. Your work will be then read by a locutor on a podacast that users will listen while commuting. 
+          You have the ability to explain articles without losing any important information.`,
+                    },
+                    {
+                        role: "user",
+                        content: `Please summarize the following text: ${text}.`,
+                    },
                 ],
-                max_tokens: 150,
+                max_tokens: 3000,
             });
-            const summary = ((_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content.trim()) || '';
+            const summary = ((_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content.trim()) || "";
             return summary;
         }
         catch (error) {

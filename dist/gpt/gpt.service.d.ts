@@ -1,4 +1,4 @@
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from "@nestjs/config";
 export declare class GptService {
     private configService;
     private readonly logger;

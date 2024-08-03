@@ -29,8 +29,8 @@ let PollyService = PollyService_1 = class PollyService {
         const params = {
             Text: text,
             OutputFormat: "mp3",
-            VoiceId: "Mia",
-            Engine: "neural",
+            VoiceId: "Ruth",
+            Engine: "generative",
         };
         const { AudioStream } = await this.polly.synthesizeSpeech(params).promise();
         const audioKey = `${(0, uuid_1.v4)()}.mp3`;

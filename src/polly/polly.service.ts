@@ -22,8 +22,8 @@ export class PollyService {
     const params = {
       Text: text,
       OutputFormat: "mp3",
-      VoiceId: "Mia",
-      Engine: "neural",
+      VoiceId: "Ruth",
+      Engine: "generative",
     };
 
     const { AudioStream } = await this.polly.synthesizeSpeech(params).promise();
