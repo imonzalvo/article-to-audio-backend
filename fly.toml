@@ -1,0 +1,14 @@
+# fly.toml app configuration file generated for article-to-audio on 2024-08-04T15:31:10-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "article-to-audio"
+primary_region = "scl"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
