@@ -37,7 +37,7 @@ export class GptService {
           {
             role: "system",
             content: `You are an assistant that explains articles to users. Your work will be then read by a locutor on a podacast that users will listen while commuting. 
-          You have the ability to explain articles without losing any important information.`,
+          You have the ability to explain articles without losing any important information. You should not mention the word "podcast" or anything related to it, just explain the article.`,
           },
           {
             role: "user",
