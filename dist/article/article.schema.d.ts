@@ -23,8 +23,8 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 /// <reference types="mongoose/types/inferrawdoctype" />
-import { Document, Types } from 'mongoose';
-import { User } from '../user/user.schema';
+import { Document, Types } from "mongoose";
+import { User } from "../user/user.schema";
 export type ArticleDocument = Article & Document;
 export declare class Article {
     _id: Types.ObjectId;
@@ -35,6 +35,7 @@ export declare class Article {
     user: User;
     originalAuthor: string;
     sourceUrl: string;
+    created_at: Date;
 }
 export declare const ArticleSchema: import("mongoose").Schema<Article, import("mongoose").Model<Article, any, any, any, Document<unknown, any, Article> & Article & Required<{
     _id: Types.ObjectId;

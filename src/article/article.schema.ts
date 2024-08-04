@@ -1,13 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { User } from '../user/user.schema';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Types } from "mongoose";
+import { User } from "../user/user.schema";
 
 export type ArticleDocument = Article & Document;
 
 @Schema()
 export class Article {
   _id: Types.ObjectId;
-  
+
   @Prop({ required: true })
   title: string;
 
@@ -20,7 +20,7 @@ export class Article {
   @Prop({ required: true })
   summaryAudioKey: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User' })
+  @Prop({ type: Types.ObjectId, ref: "User" })
   user: User;
 
   @Prop({ required: true })
@@ -28,6 +28,9 @@ export class Article {
 
   @Prop({ required: true })
   sourceUrl: string;
+
+  @Prop({ type: Date, default: Date.now })
+  created_at: Date;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);

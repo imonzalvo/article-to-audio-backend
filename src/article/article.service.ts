@@ -21,12 +21,33 @@ export class ArticleService {
     private pollyService: PollyService
   ) {}
 
-  async createFromUrl(url: string, userId: string): Promise<Article> {
+  async createFromUrl(
+    url: string,
+    userId: string,
+    sendUpdate: (data: any) => void
+  ): Promise<Article> {
     const user = await this.userService.findOne(userId);
     if (!user) {
       throw new BadRequestException("User not found");
     }
 
+    // Check if the user has reached the daily limit
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const userObjectId = new Types.ObjectId(userId);
+
+    const articlesCreatedToday = await this.articleModel.countDocuments({
+      user: userObjectId,
+      created_at: { $gte: today },
+    });
+
+    if (articlesCreatedToday >= 3) {
+      throw new BadRequestException(
+        "You have reached the daily limit of 3 articles"
+      );
+    }
+
+    sendUpdate({ progress: 10, message: "Reading article..." });
     const { title, content, author } = await this.scraperService.scrapeArticle(
       url
     );
@@ -37,30 +58,35 @@ export class ArticleService {
       );
     }
 
+    sendUpdate({ progress: 30, message: "Summarizing content..." });
     const summary = await this.gptService.summarizeText(content);
+
+    sendUpdate({ progress: 60, message: "Converting to speech..." });
     const audioKey = await this.pollyService.textToSpeech(
       summary,
       "article-to-audio"
-    ); // Replace with your actual S3 bucket name
+    );
 
+    sendUpdate({ progress: 90, message: "Saving article..." });
     const createdArticle = new this.articleModel({
       title,
       content,
       summary,
       user: user._id,
-      summaryAudioKey: audioKey, // Store the S3 key of the audio file
+      summaryAudioKey: audioKey,
       originalAuthor: author || "Unknown Author",
       sourceUrl: url,
     });
 
     const savedArticle = await createdArticle.save();
 
-    // Update the user's articles list
     await this.userModel.findByIdAndUpdate(
       userId,
       { $push: { articles: savedArticle._id } },
       { new: true, useFindAndModify: false }
     );
+
+    sendUpdate({ progress: 100, message: "Article processing complete" });
 
     return savedArticle;
   }

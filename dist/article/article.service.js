@@ -32,17 +32,31 @@ let ArticleService = class ArticleService {
         this.gptService = gptService;
         this.pollyService = pollyService;
     }
-    async createFromUrl(url, userId) {
+    async createFromUrl(url, userId, sendUpdate) {
         const user = await this.userService.findOne(userId);
         if (!user) {
             throw new common_1.BadRequestException("User not found");
         }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const userObjectId = new mongoose_3.Types.ObjectId(userId);
+        const articlesCreatedToday = await this.articleModel.countDocuments({
+            user: userObjectId,
+            created_at: { $gte: today },
+        });
+        if (articlesCreatedToday >= 3) {
+            throw new common_1.BadRequestException("You have reached the daily limit of 3 articles");
+        }
+        sendUpdate({ progress: 10, message: "Reading article..." });
         const { title, content, author } = await this.scraperService.scrapeArticle(url);
         if (!title || !content) {
             throw new common_1.BadRequestException("Failed to scrape article: missing title or content");
         }
+        sendUpdate({ progress: 30, message: "Summarizing content..." });
         const summary = await this.gptService.summarizeText(content);
+        sendUpdate({ progress: 60, message: "Converting to speech..." });
         const audioKey = await this.pollyService.textToSpeech(summary, "article-to-audio");
+        sendUpdate({ progress: 90, message: "Saving article..." });
         const createdArticle = new this.articleModel({
             title,
             content,
@@ -54,6 +68,7 @@ let ArticleService = class ArticleService {
         });
         const savedArticle = await createdArticle.save();
         await this.userModel.findByIdAndUpdate(userId, { $push: { articles: savedArticle._id } }, { new: true, useFindAndModify: false });
+        sendUpdate({ progress: 100, message: "Article processing complete" });
         return savedArticle;
     }
     async findOne(id) {

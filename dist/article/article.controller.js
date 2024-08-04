@@ -20,10 +20,26 @@ let ArticleController = class ArticleController {
     constructor(articleService) {
         this.articleService = articleService;
     }
-    createFromUrl(req, body) {
+    async createFromUrl(req, body, res) {
         const userId = req.user.userId;
-        console.log("convirtiendo");
-        return this.articleService.createFromUrl(body.url, userId);
+        res.setHeader("Content-Type", "text/plain");
+        res.setHeader("Transfer-Encoding", "chunked");
+        const sendUpdate = (data) => {
+            res.write(JSON.stringify(data) + "\n");
+        };
+        try {
+            await this.articleService.createFromUrl(body.url, userId, sendUpdate);
+            res.end();
+        }
+        catch (error) {
+            if (error instanceof common_1.BadRequestException) {
+                sendUpdate({ error: error.message, status: 400 });
+            }
+            else {
+                sendUpdate({ error: "An unexpected error occurred", status: 500 });
+            }
+            res.end();
+        }
     }
     async getAudioKeys(req) {
         const userId = req.user.userId;
@@ -44,9 +60,10 @@ __decorate([
     (0, common_1.Post)("scrape"),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", Promise)
 ], ArticleController.prototype, "createFromUrl", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

@@ -13,7 +13,7 @@ export declare class ArticleService {
     private gptService;
     private pollyService;
     constructor(articleModel: Model<ArticleDocument>, userModel: Model<User>, userService: UserService, scraperService: ScraperService, gptService: GptService, pollyService: PollyService);
-    createFromUrl(url: string, userId: string): Promise<Article>;
+    createFromUrl(url: string, userId: string, sendUpdate: (data: any) => void): Promise<Article>;
     findOne(id: string): Promise<Article>;
     findByUser(userId: string): Promise<Article[]>;
     generatePublicUrl(key: string): string;

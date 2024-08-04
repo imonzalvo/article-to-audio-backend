@@ -32,7 +32,7 @@ __decorate([
     __metadata("design:type", String)
 ], Article.prototype, "summaryAudioKey", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: 'User' }),
+    (0, mongoose_1.Prop)({ type: mongoose_2.Types.ObjectId, ref: "User" }),
     __metadata("design:type", user_schema_1.User)
 ], Article.prototype, "user", void 0);
 __decorate([
@@ -43,6 +43,10 @@ __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], Article.prototype, "sourceUrl", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: Date, default: Date.now }),
+    __metadata("design:type", Date)
+], Article.prototype, "created_at", void 0);
 Article = __decorate([
     (0, mongoose_1.Schema)()
 ], Article);
