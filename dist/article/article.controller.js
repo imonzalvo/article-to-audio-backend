@@ -36,6 +36,7 @@ let ArticleController = class ArticleController {
                 sendUpdate({ error: error.message, status: 400 });
             }
             else {
+                console.log("error: ", error);
                 sendUpdate({ error: "An unexpected error occurred", status: 500 });
             }
             res.end();

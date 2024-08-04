@@ -21,7 +21,7 @@ export class GptService {
   }
 
   /* 
-    - 1 token -> 3/4 words
+    - 1 token -> 4 characters
     - 1 article ~2200 words
     - Summary? 3000
   */
@@ -44,7 +44,7 @@ export class GptService {
             content: `Please explain the following article: ${text}.`,
           },
         ],
-        max_tokens: 750, // Adjust the length as needed
+        max_tokens: 735, // Adjust the length as needed
       });
 
       const summary = response.choices[0]?.message?.content.trim() || "";

@@ -15,25 +15,28 @@ let ScraperService = ScraperService_1 = class ScraperService {
         this.logger = new common_1.Logger(ScraperService_1.name);
     }
     async scrapeArticle(url) {
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch({
+            headless: "shell",
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
         const page = await browser.newPage();
         try {
-            await page.goto(url, { waitUntil: 'networkidle0' });
+            await page.goto(url, { waitUntil: "networkidle0" });
             const isMedium = await this.isMediumArticle(page);
             const isSubstack = await this.isSubstackArticle(page);
             let title, content, author;
             if (isMedium) {
-                title = await this.getTextContent(page, 'h1');
-                content = await this.getTextContent(page, 'article');
+                title = await this.getTextContent(page, "h1");
+                content = await this.getTextContent(page, "article");
                 author = await this.getMediumAuthor(page);
             }
             else if (isSubstack) {
-                title = await this.getTextContent(page, 'h1.post-title');
+                title = await this.getTextContent(page, "h1.post-title");
                 content = await this.getSubstackContent(page);
-                author = await this.getTextContent(page, '.byline-names');
+                author = await this.getTextContent(page, ".byline-names");
             }
             else {
-                throw new Error('Unsupported website');
+                throw new Error("Unsupported website");
             }
             return { title, content, author };
         }
@@ -47,7 +50,7 @@ let ScraperService = ScraperService_1 = class ScraperService {
     }
     async isMediumArticle(page) {
         return page.evaluate(() => {
-            return document.querySelector('meta[name="twitter:app:name:iphone"][content="Medium"]') !== null;
+            return (document.querySelector('meta[name="twitter:app:name:iphone"][content="Medium"]') !== null);
         });
     }
     async isSubstackArticle(page) {
@@ -55,10 +58,10 @@ let ScraperService = ScraperService_1 = class ScraperService {
             const substackElements = [
                 'div[data-substack-iframe="true"]',
                 'iframe[data-substack-iframe="true"]',
-                'div.post-content',
-                'div.single-post'
+                "div.post-content",
+                "div.single-post",
             ];
-            return substackElements.some(selector => document.querySelector(selector) !== null);
+            return substackElements.some((selector) => document.querySelector(selector) !== null);
         });
     }
     async getTextContent(page, selector) {
@@ -67,15 +70,15 @@ let ScraperService = ScraperService_1 = class ScraperService {
         }
         catch (error) {
             this.logger.warn(`Failed to find element with selector "${selector}"`);
-            return '';
+            return "";
         }
     }
     async getMediumAuthor(page) {
         const selectors = [
             'a[rel="author"]',
             'a[data-testid="authorName"]',
-            '.author-name',
-            'span[data-testid="authorName"]'
+            ".author-name",
+            'span[data-testid="authorName"]',
         ];
         for (const selector of selectors) {
             try {
@@ -87,21 +90,22 @@ let ScraperService = ScraperService_1 = class ScraperService {
                 this.logger.warn(`Failed to find author with selector "${selector}"`);
             }
         }
-        this.logger.warn('Failed to find author with any known selector');
-        return 'Unknown Author';
+        this.logger.warn("Failed to find author with any known selector");
+        return "Unknown Author";
     }
     async getSubstackContent(page) {
         try {
             const content = await page.evaluate(() => {
-                const articleBody = document.querySelector('.body.markup') || document.querySelector('.post-content');
+                const articleBody = document.querySelector(".body.markup") ||
+                    document.querySelector(".post-content");
                 if (!articleBody)
-                    return '';
-                const elementsToRemove = articleBody.querySelectorAll('.captioned-image-container, .subscription-widget-wrap');
-                elementsToRemove.forEach(el => el.remove());
-                const boundaryElement = Array.from(articleBody.querySelectorAll('*')).find(el => {
-                    return el.textContent.includes('Other articles people like');
+                    return "";
+                const elementsToRemove = articleBody.querySelectorAll(".captioned-image-container, .subscription-widget-wrap");
+                elementsToRemove.forEach((el) => el.remove());
+                const boundaryElement = Array.from(articleBody.querySelectorAll("*")).find((el) => {
+                    return el.textContent.includes("Other articles people like");
                 });
-                let content = '';
+                let content = "";
                 if (boundaryElement) {
                     const range = document.createRange();
                     range.setStart(articleBody, 0);
@@ -116,8 +120,8 @@ let ScraperService = ScraperService_1 = class ScraperService {
             return content;
         }
         catch (error) {
-            this.logger.warn('Failed to extract content from Substack article');
-            return '';
+            this.logger.warn("Failed to extract content from Substack article");
+            return "";
         }
     }
 };
