@@ -7,7 +7,7 @@ app = "article-to-audio"
 primary_region = "scl"
 
 [http_service]
-  internal_port = 3001
+  internal_port = 3000
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
