@@ -26,6 +26,7 @@ let PollyService = PollyService_1 = class PollyService {
         this.s3 = new AWS.S3();
     }
     async textToSpeech(text, bucketName) {
+        console.log("Converting audio with size:", text.length);
         const params = {
             Text: text,
             OutputFormat: "mp3",

@@ -41,7 +41,7 @@ export class ArticleService {
       created_at: { $gte: today },
     });
 
-    if (articlesCreatedToday >= 3) {
+    if (articlesCreatedToday >= 2) {
       throw new BadRequestException(
         "You have reached the daily limit of 3 articles"
       );

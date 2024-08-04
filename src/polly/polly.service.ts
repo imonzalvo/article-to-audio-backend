@@ -19,6 +19,8 @@ export class PollyService {
   }
 
   async textToSpeech(text: string, bucketName: string): Promise<string> {
+    console.log("Converting audio with size:", text.length);
+
     const params = {
       Text: text,
       OutputFormat: "mp3",

@@ -44,7 +44,7 @@ export class GptService {
             content: `Please explain the following article: ${text}.`,
           },
         ],
-        max_tokens: 735, // Adjust the length as needed
+        max_tokens: 710, // Adjust the length as needed
       });
 
       const summary = response.choices[0]?.message?.content.trim() || "";

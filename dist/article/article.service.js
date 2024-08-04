@@ -44,7 +44,7 @@ let ArticleService = class ArticleService {
             user: userObjectId,
             created_at: { $gte: today },
         });
-        if (articlesCreatedToday >= 3) {
+        if (articlesCreatedToday >= 30) {
             throw new common_1.BadRequestException("You have reached the daily limit of 3 articles");
         }
         sendUpdate({ progress: 10, message: "Reading article..." });
@@ -52,11 +52,11 @@ let ArticleService = class ArticleService {
         if (!title || !content) {
             throw new common_1.BadRequestException("Failed to scrape article: missing title or content");
         }
-        sendUpdate({ progress: 30, message: "Summarizing content..." });
+        sendUpdate({ progress: 30, message: 1 });
         const summary = await this.gptService.summarizeText(content);
-        sendUpdate({ progress: 60, message: "Converting to speech..." });
+        sendUpdate({ progress: 60, message: 2 });
         const audioKey = await this.pollyService.textToSpeech(summary, "article-to-audio");
-        sendUpdate({ progress: 90, message: "Saving article..." });
+        sendUpdate({ progress: 90, message: 3 });
         const createdArticle = new this.articleModel({
             title,
             content,
@@ -68,7 +68,7 @@ let ArticleService = class ArticleService {
         });
         const savedArticle = await createdArticle.save();
         await this.userModel.findByIdAndUpdate(userId, { $push: { articles: savedArticle._id } }, { new: true, useFindAndModify: false });
-        sendUpdate({ progress: 100, message: "Article processing complete" });
+        sendUpdate({ progress: 100, message: 4 });
         return savedArticle;
     }
     async findOne(id) {
