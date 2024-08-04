@@ -29,7 +29,6 @@ let ArticleController = class ArticleController {
         const userId = req.user.userId;
         console.log("user", userId);
         const articles = await this.articleService.findByUser(userId);
-        console.log("articles", articles);
         return articles.map((article) => ({
             id: article._id,
             title: article.title,

@@ -39,7 +39,7 @@ let GptService = GptService_1 = class GptService {
                     },
                     {
                         role: "user",
-                        content: `Please summarize the following text: ${text}.`,
+                        content: `Please explain the following article: ${text}.`,
                     },
                 ],
                 max_tokens: 3000,
