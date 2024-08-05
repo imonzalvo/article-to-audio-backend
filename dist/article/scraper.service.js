@@ -33,7 +33,15 @@ let ScraperService = ScraperService_1 = class ScraperService {
             else if (isSubstack) {
                 title = await this.getTextContent(page, "h1.post-title");
                 content = await this.getSubstackContent(page);
-                author = await this.getTextContent(page, ".byline-names");
+                const authorSelector = '.byline-wrapper a';
+                author = await page.$$eval(authorSelector, anchors => {
+                    if (anchors.length >= 2) {
+                        return anchors[1].innerText;
+                    }
+                    else {
+                        throw new Error('Less than two anchor tags found');
+                    }
+                });
             }
             else {
                 throw new Error("Unsupported website");
@@ -67,6 +75,16 @@ let ScraperService = ScraperService_1 = class ScraperService {
     async getTextContent(page, selector) {
         try {
             return await page.$eval(selector, (el) => el.textContent.trim());
+        }
+        catch (error) {
+            this.logger.warn(`Failed to find element with selector "${selector}"`);
+            return "";
+        }
+    }
+    async getAuthorContent(page, selector) {
+        try {
+            console.log("what!?!>>!>!>");
+            return await page.$eval(selector, el => el.innerHTML);
         }
         catch (error) {
             this.logger.warn(`Failed to find element with selector "${selector}"`);

@@ -31,7 +31,6 @@ export class ArticleService {
       throw new BadRequestException("User not found");
     }
 
-    // Check if the user has reached the daily limit
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const userObjectId = new Types.ObjectId(userId);
@@ -41,6 +40,7 @@ export class ArticleService {
       created_at: { $gte: today },
     });
 
+    // Check if the user has reached the daily limit
     if (articlesCreatedToday >= 2) {
       throw new BadRequestException(
         "You have reached the daily limit of 3 articles"
@@ -52,43 +52,46 @@ export class ArticleService {
       url
     );
 
+    console.log("aritcle", author)
+
     if (!title || !content) {
       throw new BadRequestException(
         "Failed to scrape article: missing title or content"
       );
     }
 
-    sendUpdate({ progress: 30, message: "Summarizing content..." });
-    const summary = await this.gptService.summarizeText(content);
+    // sendUpdate({ progress: 30, message: "Summarizing content..." });
+    // const summary = await this.gptService.summarizeText(content);
 
-    sendUpdate({ progress: 60, message: "Converting to speech..." });
-    const audioKey = await this.pollyService.textToSpeech(
-      summary,
-      "article-to-audio"
-    );
+    // sendUpdate({ progress: 60, message: "Converting to speech..." });
+    // const audioKey = await this.pollyService.textToSpeech(
+    //   summary,
+    //   "article-to-audio"
+    // );
 
-    sendUpdate({ progress: 90, message: "Saving article..." });
-    const createdArticle = new this.articleModel({
-      title,
-      content,
-      summary,
-      user: user._id,
-      summaryAudioKey: audioKey,
-      originalAuthor: author || "Unknown Author",
-      sourceUrl: url,
-    });
+    // sendUpdate({ progress: 90, message: "Saving article..." });
+    // const createdArticle = new this.articleModel({
+    //   title,
+    //   content,
+    //   summary,
+    //   user: user._id,
+    //   summaryAudioKey: audioKey,
+    //   originalAuthor: author || "Unknown Author",
+    //   sourceUrl: url,
+    // });
 
-    const savedArticle = await createdArticle.save();
+    // const savedArticle = await createdArticle.save();
 
-    await this.userModel.findByIdAndUpdate(
-      userId,
-      { $push: { articles: savedArticle._id } },
-      { new: true, useFindAndModify: false }
-    );
+    // await this.userModel.findByIdAndUpdate(
+    //   userId,
+    //   { $push: { articles: savedArticle._id } },
+    //   { new: true, useFindAndModify: false }
+    // );
 
-    sendUpdate({ progress: 100, message: "Article processing complete" });
+    // sendUpdate({ progress: 100, message: "Article processing complete" });
 
-    return savedArticle;
+    // return savedArticle;
+    return null;
   }
 
   async findOne(id: string): Promise<Article> {

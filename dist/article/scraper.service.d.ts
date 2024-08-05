@@ -8,6 +8,7 @@ export declare class ScraperService {
     private isMediumArticle;
     private isSubstackArticle;
     private getTextContent;
+    private getAuthorContent;
     private getMediumAuthor;
     private getSubstackContent;
 }

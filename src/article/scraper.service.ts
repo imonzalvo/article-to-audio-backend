@@ -29,11 +29,19 @@ export class ScraperService {
       } else if (isSubstack) {
         title = await this.getTextContent(page, "h1.post-title");
         content = await this.getSubstackContent(page);
-        author = await this.getTextContent(page, ".byline-names");
+        
+        const authorSelector = '.byline-wrapper a';
+        author = await page.$$eval(authorSelector, anchors => {
+          // Check if there are at least 2 `a` tags
+          if (anchors.length >= 2) {
+            return anchors[1].innerText; // Get the text of the second `a` tag
+          } else {
+            throw new Error('Less than two anchor tags found');
+          }
+        });
       } else {
         throw new Error("Unsupported website");
       }
-
       return { title, content, author };
     } catch (error) {
       this.logger.error(`Failed to scrape article: ${error.message}`);
@@ -74,6 +82,19 @@ export class ScraperService {
   ): Promise<string> {
     try {
       return await page.$eval(selector, (el) => el.textContent.trim());
+    } catch (error) {
+      this.logger.warn(`Failed to find element with selector "${selector}"`);
+      return "";
+    }
+  }
+
+  private async getAuthorContent(
+    page: puppeteer.Page,
+    selector: string
+  ): Promise<string> {
+    try {
+      console.log("what!?!>>!>!>")
+      return await page.$eval(selector, el => el.innerHTML);
     } catch (error) {
       this.logger.warn(`Failed to find element with selector "${selector}"`);
       return "";
