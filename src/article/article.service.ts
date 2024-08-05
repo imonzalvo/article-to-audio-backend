@@ -60,38 +60,37 @@ export class ArticleService {
       );
     }
 
-    // sendUpdate({ progress: 30, message: "Summarizing content..." });
-    // const summary = await this.gptService.summarizeText(content);
+    sendUpdate({ progress: 30, message: "Summarizing content..." });
+    const summary = await this.gptService.summarizeText(content);
 
-    // sendUpdate({ progress: 60, message: "Converting to speech..." });
-    // const audioKey = await this.pollyService.textToSpeech(
-    //   summary,
-    //   "article-to-audio"
-    // );
+    sendUpdate({ progress: 60, message: "Converting to speech..." });
+    const audioKey = await this.pollyService.textToSpeech(
+      summary,
+      "article-to-audio"
+    );
 
-    // sendUpdate({ progress: 90, message: "Saving article..." });
-    // const createdArticle = new this.articleModel({
-    //   title,
-    //   content,
-    //   summary,
-    //   user: user._id,
-    //   summaryAudioKey: audioKey,
-    //   originalAuthor: author || "Unknown Author",
-    //   sourceUrl: url,
-    // });
+    sendUpdate({ progress: 90, message: "Saving article..." });
+    const createdArticle = new this.articleModel({
+      title,
+      content,
+      summary,
+      user: user._id,
+      summaryAudioKey: audioKey,
+      originalAuthor: author || "Unknown Author",
+      sourceUrl: url,
+    });
 
-    // const savedArticle = await createdArticle.save();
+    const savedArticle = await createdArticle.save();
 
-    // await this.userModel.findByIdAndUpdate(
-    //   userId,
-    //   { $push: { articles: savedArticle._id } },
-    //   { new: true, useFindAndModify: false }
-    // );
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $push: { articles: savedArticle._id } },
+      { new: true, useFindAndModify: false }
+    );
 
-    // sendUpdate({ progress: 100, message: "Article processing complete" });
+    sendUpdate({ progress: 100, message: "Article processing complete" });
 
-    // return savedArticle;
-    return null;
+    return savedArticle;
   }
 
   async findOne(id: string): Promise<Article> {
