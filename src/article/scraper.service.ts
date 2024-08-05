@@ -29,14 +29,14 @@ export class ScraperService {
       } else if (isSubstack) {
         title = await this.getTextContent(page, "h1.post-title");
         content = await this.getSubstackContent(page);
-        
-        const authorSelector = '.byline-wrapper a';
-        author = await page.$$eval(authorSelector, anchors => {
+
+        const authorSelector = ".byline-wrapper a";
+        author = await page.$$eval(authorSelector, (anchors) => {
           // Check if there are at least 2 `a` tags
           if (anchors.length >= 2) {
             return anchors[1].innerText; // Get the text of the second `a` tag
           } else {
-            throw new Error('Less than two anchor tags found');
+            return "Unknown author";
           }
         });
       } else {
@@ -69,6 +69,8 @@ export class ScraperService {
         'iframe[data-substack-iframe="true"]',
         "div.post-content",
         "div.single-post",
+        "data-substack-content",
+        "p[data-substack-content]",
       ];
       return substackElements.some(
         (selector) => document.querySelector(selector) !== null
@@ -93,8 +95,7 @@ export class ScraperService {
     selector: string
   ): Promise<string> {
     try {
-      console.log("what!?!>>!>!>")
-      return await page.$eval(selector, el => el.innerHTML);
+      return await page.$eval(selector, (el) => el.innerHTML);
     } catch (error) {
       this.logger.warn(`Failed to find element with selector "${selector}"`);
       return "";
